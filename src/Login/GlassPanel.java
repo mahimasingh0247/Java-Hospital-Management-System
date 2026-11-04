@@ -1,5 +1,6 @@
 package Login;
 
+import Dashboard.DashboardFrame;
 import javax.swing.*;
 import java.awt.*;
 
@@ -72,6 +73,44 @@ public class GlassPanel extends JPanel {
         signIn.setFont(new Font("Arial", Font.BOLD, 16));
         signIn.setFocusPainted(false);
         signIn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Temporary Sign In action
+        signIn.addActionListener(e -> {
+
+            String enteredUsername = username.getText().trim();
+
+            String enteredPassword =
+                    new String(password.getPassword());
+
+            if (enteredUsername.isEmpty()
+                    || enteredPassword.isEmpty()) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please enter your username and password.",
+                        "Login Required",
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                return;
+            }
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Login successful!",
+                    "Welcome",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+            // Close Login and return to Dashboard
+            Window window = SwingUtilities.getWindowAncestor(this);
+
+            if (window != null) {
+                window.dispose();
+            }
+
+            new Dashboard.DashboardFrame();
+        });
 
         // Add everything to the panel
         add(hospitalTitle);

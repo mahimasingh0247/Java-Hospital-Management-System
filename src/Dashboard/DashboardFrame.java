@@ -38,8 +38,10 @@ public class DashboardFrame extends JFrame {
         sidebar.add(heading);
 
         // Navigation buttons
+
         String[] menuItems = {
                 "Dashboard",
+                "Login",
                 "Patients",
                 "Doctors",
                 "Appointments",
@@ -53,21 +55,90 @@ public class DashboardFrame extends JFrame {
             button.setFont(new Font("Arial", Font.PLAIN, 16));
             button.setForeground(Color.WHITE);
             button.setBackground(new Color(18, 36, 65));
+
             button.setBorder(
                     BorderFactory.createEmptyBorder(15, 25, 15, 10)
             );
+
             button.setAlignmentX(Component.LEFT_ALIGNMENT);
             button.setHorizontalAlignment(SwingConstants.LEFT);
             button.setFocusPainted(false);
+
             button.setCursor(
                     new Cursor(Cursor.HAND_CURSOR)
             );
+
             button.setMaximumSize(
                     new Dimension(Integer.MAX_VALUE, 50)
             );
 
+            // Highlight the currently selected section
+            if (item.equals("Dashboard")) {
+
+                button.setBackground(new Color(40, 70, 110));
+                button.setFont(new Font("Arial", Font.BOLD, 16));
+            }
+
+            // Open Login screen
+            if (item.equals("Login")) {
+
+                button.addActionListener(e -> {
+
+                    dispose();
+
+                    new Login.LoginFrame();
+                });
+            }
+
             sidebar.add(button);
         }
+
+        // Push Logout towards the bottom
+        sidebar.add(Box.createVerticalGlue());
+
+        // Logout button
+        JButton logoutButton = new JButton("Logout");
+
+        logoutButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        logoutButton.setForeground(Color.WHITE);
+        logoutButton.setBackground(new Color(18, 36, 65));
+
+        logoutButton.setBorder(
+                BorderFactory.createEmptyBorder(15, 25, 15, 10)
+        );
+
+        logoutButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+        logoutButton.setHorizontalAlignment(SwingConstants.LEFT);
+        logoutButton.setFocusPainted(false);
+
+        logoutButton.setCursor(
+                new Cursor(Cursor.HAND_CURSOR)
+        );
+
+        logoutButton.setMaximumSize(
+                new Dimension(Integer.MAX_VALUE, 50)
+        );
+
+        // Logout action
+        logoutButton.addActionListener(e -> {
+
+            int choice = JOptionPane.showConfirmDialog(
+                    this,
+                    "Are you sure you want to logout?",
+                    "Confirm Logout",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (choice == JOptionPane.YES_OPTION) {
+
+                dispose();
+
+                new Login.LoginFrame();
+            }
+        });
+
+        sidebar.add(logoutButton);
+
 
         // Main content area
         DashboardContent content = new DashboardContent();
