@@ -1,4 +1,3 @@
-
 import Dashboard.DashboardFrame;
 import javax.swing.SwingUtilities;
 
@@ -9,5 +8,6 @@ public class Main {
         SwingUtilities.invokeLater(() -> {
             new DashboardFrame();
         });
+
     }
 }

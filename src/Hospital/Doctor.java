@@ -49,5 +49,6 @@ public class Doctor {
         System.out.println("Shift: " + shift);
         System.out.println("Timing: " + timing);
     }
+
 }
 
