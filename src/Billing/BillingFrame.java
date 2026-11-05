@@ -3,14 +3,17 @@ package Billing;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 
 public class BillingFrame extends JPanel {
 
-    // Input fields
+    // Patient information fields
     private JTextField patientIdField;
     private JTextField patientNameField;
 
+    // Bill charge fields
     private JTextField doctorFeesField;
     private JTextField medicineChargesField;
     private JTextField roomChargesField;
@@ -18,6 +21,9 @@ public class BillingFrame extends JPanel {
     private JTextField discountField;
 
     private JComboBox<String> paymentStatus;
+
+    // Total amount label
+    private JLabel totalLabel;
 
     public BillingFrame() {
 
@@ -107,7 +113,7 @@ public class BillingFrame extends JPanel {
         );
 
         // Total amount display
-        JLabel totalLabel = new JLabel("Total Amount: ₹ 0.00");
+        totalLabel = new JLabel("Total Amount: ₹ 0.00");
 
         totalLabel.setFont(
                 new Font("Arial", Font.BOLD, 22)
@@ -121,6 +127,31 @@ public class BillingFrame extends JPanel {
         gbc.insets = new Insets(25, 10, 15, 10);
 
         form.add(totalLabel, gbc);
+
+        // Automatically calculate total when charges change
+        DocumentListener calculationListener = new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                calculateTotal();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                calculateTotal();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                calculateTotal();
+            }
+        };
+
+        doctorFeesField.getDocument().addDocumentListener(calculationListener);
+        medicineChargesField.getDocument().addDocumentListener(calculationListener);
+        roomChargesField.getDocument().addDocumentListener(calculationListener);
+        testChargesField.getDocument().addDocumentListener(calculationListener);
+        discountField.getDocument().addDocumentListener(calculationListener);
 
         // Generate bill button
         JButton generateButton = new JButton("Generate Bill");
@@ -136,6 +167,7 @@ public class BillingFrame extends JPanel {
         generateButton.setCursor(
                 new Cursor(Cursor.HAND_CURSOR)
         );
+        generateButton.addActionListener(e -> validateBill());
 
         gbc.gridy = 7;
         gbc.fill = GridBagConstraints.NONE;
@@ -220,6 +252,172 @@ public class BillingFrame extends JPanel {
 
         panel.add(fieldPanel, gbc);
     }
+
+    // Calculate the bill total
+    private void calculateTotal() {
+
+        double doctorFees = getAmount(doctorFeesField);
+        double medicineCharges = getAmount(medicineChargesField);
+        double roomCharges = getAmount(roomChargesField);
+        double testCharges = getAmount(testChargesField);
+        double discount = getAmount(discountField);
+
+        double subtotal = doctorFees
+                + medicineCharges
+                + roomCharges
+                + testCharges;
+
+        double total = subtotal - discount;
+
+        totalLabel.setText(
+                String.format("Total Amount: ₹ %.2f", total)
+        );
+    }
+
+    // Convert text field input into a number
+    private double getAmount(JTextField field) {
+
+        try {
+
+            String value = field.getText().trim();
+
+            if (value.isEmpty()) {
+                return 0;
+            }
+
+            return Double.parseDouble(value);
+
+        } catch (NumberFormatException e) {
+
+            return 0;
+        }
+    }
+
+    private void validateBill() {
+
+        // Check patient information
+        if (patientIdField.getText().trim().isEmpty()
+                || patientNameField.getText().trim().isEmpty()) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please enter Patient ID and Patient Name.",
+                    "Missing Information",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        // Check all charge fields
+        JTextField[] amountFields = {
+                doctorFeesField,
+                medicineChargesField,
+                roomChargesField,
+                testChargesField,
+                discountField
+        };
+
+        for (JTextField field : amountFields) {
+
+            String value = field.getText().trim();
+
+            if (!value.isEmpty()) {
+                try {
+                    double amount = Double.parseDouble(value);
+
+                    if (amount < 0) {
+                        throw new NumberFormatException();
+                    }
+
+                } catch (NumberFormatException e) {
+
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Please enter valid non-negative amounts.",
+                            "Invalid Amount",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                    field.requestFocus();
+                    return;
+                }
+            }
+        }
+
+        // Calculate subtotal and discount
+        double subtotal =
+                getAmount(doctorFeesField)
+                        + getAmount(medicineChargesField)
+                        + getAmount(roomChargesField)
+                        + getAmount(testChargesField);
+
+        double discount = getAmount(discountField);
+
+        if (discount > subtotal) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Discount cannot exceed the subtotal.",
+                    "Invalid Discount",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            discountField.requestFocus();
+            return;
+        }
+
+        showBillSummary();
+    }
+
+
+    private void showBillSummary() {
+
+        double doctorFees = getAmount(doctorFeesField);
+        double medicineCharges = getAmount(medicineChargesField);
+        double roomCharges = getAmount(roomChargesField);
+        double testCharges = getAmount(testChargesField);
+        double discount = getAmount(discountField);
+
+        double subtotal = doctorFees + medicineCharges
+                + roomCharges + testCharges;
+
+        double total = subtotal - discount;
+
+
+
+        String summary =
+                "                 HOSPITAL BILL\n"
+                        + "------------------------------------------------\n"
+                        + "Patient ID:       " + patientIdField.getText().trim() + "\n"
+                        + "Patient Name:     " + patientNameField.getText().trim() + "\n"
+                        + "------------------------------------------------\n"
+                        + String.format("%-24s %12s%n", "Doctor Fees:", "₹ " + String.format("%.2f", doctorFees))
+                        + String.format("%-24s %12s%n", "Medicine Charges:", "₹ " + String.format("%.2f", medicineCharges))
+                        + String.format("%-24s %12s%n", "Room Charges:", "₹ " + String.format("%.2f", roomCharges))
+                        + String.format("%-24s %12s%n", "Test Charges:", "₹ " + String.format("%.2f", testCharges))
+                        + "------------------------------------------------\n"
+                        + String.format("%-24s %12s%n", "Subtotal:", "₹ " + String.format("%.2f", subtotal))
+                        + String.format("%-24s %12s%n", "Discount:", "₹ " + String.format("%.2f", discount))
+                        + "------------------------------------------------\n"
+                        + String.format("%-24s %12s%n", "TOTAL AMOUNT:", "₹ " + String.format("%.2f", total))
+                        + "Payment Status:   " + paymentStatus.getSelectedItem() + "\n"
+                        + "------------------------------------------------\n"
+                        + "                  Thank you!\n";
+
+
+        JTextArea billArea = new JTextArea(summary);
+
+        billArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        billArea.setEditable(false);
+        billArea.setOpaque(false);
+
+        JOptionPane.showMessageDialog(
+                this,
+                billArea,
+                "Generated Bill",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
+
     // Temporary method to test Billing screen
     public static void main(String[] args) {
 
@@ -248,4 +446,3 @@ public class BillingFrame extends JPanel {
         });
     }
 }
-
