@@ -5,11 +5,16 @@ import Billing.BillingFrame;
 import Hospital.PatientUI;
 import Hospital.DoctorUI;
 import Hospital.AppointmentUI;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class DashboardFrame extends JFrame {
+
+    private DashboardContent content;
+    private boolean refreshWhenFocusReturns = false;
 
     public DashboardFrame() {
 
@@ -205,13 +210,33 @@ public class DashboardFrame extends JFrame {
 
 
         // Main content area
-        DashboardContent content = new DashboardContent();
+        content = new DashboardContent();
 
         // Assemble the dashboard
         background.add(sidebar, BorderLayout.WEST);
         background.add(content, BorderLayout.CENTER);
 
         setContentPane(background);
+
+        // Refresh dashboard when returning from another window
+        addWindowFocusListener(new WindowAdapter() {
+
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                refreshWhenFocusReturns = true;
+            }
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+
+                if (refreshWhenFocusReturns) {
+
+                    content.refreshDashboard();
+
+                    refreshWhenFocusReturns = false;
+                }
+            }
+        });
 
         setVisible(true);
     }

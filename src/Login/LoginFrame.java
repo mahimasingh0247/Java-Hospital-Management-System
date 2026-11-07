@@ -21,7 +21,7 @@ public class LoginFrame extends JFrame {
         GlassPanel glass = new GlassPanel();
 
         // Give it some dimensions
-        glass.setPreferredSize(new java.awt.Dimension(420, 400));
+        glass.setPreferredSize(new java.awt.Dimension(420, 460));
 
         // Place it in the center
         background.add(glass);

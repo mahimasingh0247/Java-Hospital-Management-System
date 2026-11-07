@@ -1,8 +1,11 @@
+
 package Login;
 
 import Dashboard.DashboardFrame;
+
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 
 public class GlassPanel extends JPanel {
 
@@ -37,7 +40,7 @@ public class GlassPanel extends JPanel {
 
         // Subtitle
         JLabel subtitle =
-                new JLabel("Sign in to continue");
+                new JLabel("Sign in or register to continue");
 
         subtitle.setForeground(new Color(225, 235, 255));
         subtitle.setFont(new Font("Arial", Font.PLAIN, 15));
@@ -49,11 +52,11 @@ public class GlassPanel extends JPanel {
         username.setFont(new Font("Arial", Font.PLAIN, 16));
         username.setBorder(
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(new Color(190, 205, 230)),
+                        BorderFactory.createLineBorder(
+                                new Color(190, 205, 230)),
                         BorderFactory.createEmptyBorder(5, 10, 5, 10)
                 )
         );
-
 
         // Password field
         JPasswordField password = new JPasswordField();
@@ -61,7 +64,8 @@ public class GlassPanel extends JPanel {
         password.setFont(new Font("Arial", Font.PLAIN, 16));
         password.setBorder(
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(new Color(190, 205, 230)),
+                        BorderFactory.createLineBorder(
+                                new Color(190, 205, 230)),
                         BorderFactory.createEmptyBorder(5, 10, 5, 10)
                 )
         );
@@ -74,42 +78,173 @@ public class GlassPanel extends JPanel {
         signIn.setFocusPainted(false);
         signIn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Temporary Sign In action
+        // Register button
+        JButton register = new JButton("Register");
+        register.setMaximumSize(new Dimension(300, 42));
+        register.setAlignmentX(Component.CENTER_ALIGNMENT);
+        register.setFont(new Font("Arial", Font.BOLD, 16));
+        register.setFocusPainted(false);
+        register.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Sign In action
         signIn.addActionListener(e -> {
 
             String enteredUsername = username.getText().trim();
+            char[] enteredPassword = password.getPassword();
 
-            String enteredPassword =
-                    new String(password.getPassword());
+            try {
 
-            if (enteredUsername.isEmpty()
-                    || enteredPassword.isEmpty()) {
+                if (enteredUsername.isEmpty()
+                        || enteredPassword.length == 0) {
+
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Please enter your username and password.",
+                            "Login Required",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+
+                    return;
+                }
+
+                boolean authenticated =
+                        AuthenticationService.authenticate(
+                                enteredUsername, enteredPassword
+                        );
+
+                if (authenticated) {
+
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Login successful!",
+                            "Welcome",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+
+                    // Close Login window
+                    Window window =
+                            SwingUtilities.getWindowAncestor(this);
+
+                    if (window != null) {
+                        window.dispose();
+                    }
+
+                    // Open Dashboard
+                    new DashboardFrame();
+
+                } else {
+
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Invalid username or password.",
+                            "Login Failed",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                }
+
+            } catch (Exception ex) {
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Please enter your username and password.",
-                        "Login Required",
-                        JOptionPane.WARNING_MESSAGE
+                        "Login error: " + ex.getMessage(),
+                        "Database Error",
+                        JOptionPane.ERROR_MESSAGE
                 );
 
-                return;
+            } finally {
+                Arrays.fill(enteredPassword, '\0');
+                password.setText("");
             }
+        });
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Login successful!",
-                    "Welcome",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
+        // Registration action
+        register.addActionListener(e -> {
 
-            // Close Login and return to Dashboard
-            Window window = SwingUtilities.getWindowAncestor(this);
+            String enteredUsername = username.getText().trim();
+            char[] enteredPassword = password.getPassword();
 
-            if (window != null) {
-                window.dispose();
+            try {
+
+                if (enteredUsername.isEmpty()
+                        || enteredPassword.length == 0) {
+
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Please enter a username and password.",
+                            "Registration Required",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+
+                    return;
+                }
+
+                AuthenticationService.RegistrationResult result =
+                        AuthenticationService.registerUser(
+                                enteredUsername, enteredPassword
+                        );
+
+                switch (result) {
+
+                    case REGISTERED:
+
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "Registration successful! "
+                                        + "You can now sign in.",
+                                "Account Created",
+                                JOptionPane.INFORMATION_MESSAGE
+                        );
+
+                        password.setText("");
+                        break;
+
+                    case USERNAME_EXISTS:
+
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "This username is already registered.",
+                                "Registration Failed",
+                                JOptionPane.WARNING_MESSAGE
+                        );
+
+                        break;
+
+                    case INVALID_USERNAME:
+
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "Username must contain English letters only.",
+                                "Invalid Username",
+                                JOptionPane.WARNING_MESSAGE
+                        );
+
+                        break;
+
+                    case INVALID_PASSWORD:
+
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "Password must contain digits only.",
+                                "Invalid Password",
+                                JOptionPane.WARNING_MESSAGE
+                        );
+
+                        break;
+                }
+
+            } catch (Exception ex) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Registration error: " + ex.getMessage(),
+                        "Database Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+
+            } finally {
+                Arrays.fill(enteredPassword, '\0');
+                password.setText("");
             }
-
-            new Dashboard.DashboardFrame();
         });
 
         // Add everything to the panel
@@ -129,6 +264,9 @@ public class GlassPanel extends JPanel {
         add(Box.createVerticalStrut(25));
 
         add(signIn);
+        add(Box.createVerticalStrut(10));
+
+        add(register);
     }
 
     @Override
