@@ -1,6 +1,10 @@
 package Dashboard;
 
 import Login.BackgroundPanel;
+import Billing.BillingFrame;
+import Hospital.PatientUI;
+import Hospital.DoctorUI;
+import Hospital.AppointmentUI;
 
 import javax.swing.*;
 import java.awt.*;
@@ -41,11 +45,11 @@ public class DashboardFrame extends JFrame {
 
         String[] menuItems = {
                 "Dashboard",
-                "Login",
                 "Patients",
                 "Doctors",
                 "Appointments",
-                "Billing"
+                "Billing",
+                "Login"
         };
 
         for (String item : menuItems) {
@@ -87,6 +91,66 @@ public class DashboardFrame extends JFrame {
                     dispose();
 
                     new Login.LoginFrame();
+                });
+            }
+
+            // Open Patient Management screen
+            if (item.equals("Patients")) {
+
+                button.addActionListener(e -> {
+
+                    PatientUI patientWindow = new PatientUI();
+
+                    patientWindow.setVisible(true);
+                });
+            }
+
+            // Open Doctor Management screen
+            if (item.equals("Doctors")) {
+
+                button.addActionListener(e -> {
+
+                    new DoctorUI();
+
+                });
+            }
+
+            // Open Appointment Management screen
+            if (item.equals("Appointments")) {
+                button.addActionListener(e -> {
+                    new AppointmentUI();
+                });
+            }
+
+            // Open Billing screen
+            if (item.equals("Billing")) {
+
+                button.addActionListener(e -> {
+
+                    JFrame billingWindow =
+                            new JFrame("Hospital Management - Billing");
+
+                    billingWindow.setDefaultCloseOperation(
+                            JFrame.DISPOSE_ON_CLOSE
+                    );
+
+                    // Use the same marble background
+                    BackgroundPanel billingBackground =
+                            new BackgroundPanel();
+
+                    billingBackground.setLayout(new BorderLayout());
+
+                    // Add Billing screen
+                    billingBackground.add(
+                            new BillingFrame(),
+                            BorderLayout.CENTER
+                    );
+
+                    billingWindow.setContentPane(billingBackground);
+
+                    billingWindow.setSize(1200, 750);
+                    billingWindow.setLocationRelativeTo(null);
+                    billingWindow.setVisible(true);
                 });
             }
 

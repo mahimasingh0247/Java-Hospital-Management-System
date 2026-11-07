@@ -6,6 +6,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.math.BigDecimal;
+import java.sql.SQLException;
 
 public class BillingFrame extends JPanel {
 
@@ -364,7 +366,68 @@ public class BillingFrame extends JPanel {
             return;
         }
 
-        showBillSummary();
+        saveBillToDatabase();
+    }
+
+    private void saveBillToDatabase() {
+
+        try {
+
+            int patientId = Integer.parseInt(
+                    patientIdField.getText().trim()
+            );
+
+            BillingService service = new BillingService();
+
+            int billId = service.saveBill(
+                    patientId,
+                    patientNameField.getText().trim(),
+                    getBigDecimal(doctorFeesField),
+                    getBigDecimal(medicineChargesField),
+                    getBigDecimal(roomChargesField),
+                    getBigDecimal(testChargesField),
+                    getBigDecimal(discountField),
+                    (String) paymentStatus.getSelectedItem()
+            );
+
+            showBillSummary();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Bill saved successfully! Bill ID: " + billId,
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (NumberFormatException e) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please enter a valid Patient ID and amounts.",
+                    "Invalid Input",
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+        } catch (IllegalArgumentException | SQLException e) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    e.getMessage(),
+                    "Billing Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+    private BigDecimal getBigDecimal(JTextField field) {
+
+        String value = field.getText().trim();
+
+        if (value.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        return new BigDecimal(value);
     }
 
 

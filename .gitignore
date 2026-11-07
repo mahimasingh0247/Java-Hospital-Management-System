@@ -28,3 +28,11 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+# Local IntelliJ database connections
+.idea/dataSources.xml
+.idea/dataSources.local.xml
+.idea/dataSources/
+
+# Personal IntelliJ workspace
+.idea/workspace.xml
